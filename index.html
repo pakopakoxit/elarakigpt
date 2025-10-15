@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elaraki GPT - Assistant IA de l'École Internationale El Araki</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎓</text></svg>">
+</head>
+<body>
+    <!-- Background Elements -->
+    <div class="background-elements">
+        <div class="bg-shape shape-1"></div>
+        <div class="bg-shape shape-2"></div>
+        <div class="bg-shape shape-3"></div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Header avec Logo Élégant -->
+        <header class="header">
+            <div class="header-content">
+                <div class="logo-section">
+                    <div class="logo-container">
+                        <div class="logo-main">
+                            <div class="logo-shield">
+                                <div class="shield-base">
+                                    <div class="shield-inner">
+                                        <img src="eagle-icon.png" alt="El Araki Eagle" class="eagle-icon">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="logo-text">
+                                <h1 class="school-name">El Araki International School</h1>
+                                <h2 class="gpt-title">Elaraki GPT</h2>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <button class="action-btn about-btn" id="about-btn">
+                        <span>À Propos</span>
+                    </button>
+                    <button class="action-btn contact-btn" id="contact-btn">
+                        <span>Contact</span>
+                    </button>
+                </div>
+            </div>
+            <div class="header-decoration">
+                <div class="decoration-line"></div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="chat-interface">
+                <!-- Welcome Section -->
+                <div class="welcome-section" id="welcome-section">
+                    <div class="welcome-content">
+                        <div class="welcome-icon">
+                            <img src="sparkle-icon.png" alt="Sparkle" class="real-icon">
+                        </div>
+                        <h1 class="welcome-title">Bienvenue sur Elaraki GPT</h1>
+                        <p class="welcome-subtitle">Votre assistant IA intelligent de l'École Internationale El Araki</p>
+                        <div class="feature-grid">
+                            <div class="feature-card">
+                                <div class="feature-icon">
+                                    <img src="graduation-icon.png" alt="Pédagogie Innovante" class="real-icon">
+                                </div>
+                                <h3>Pédagogie Innovante</h3>
+                                <p>Assistance éducative et académique</p>
+                            </div>
+                            <div class="feature-card">
+                                <div class="feature-icon">
+                                    <img src="globe-icon.png" alt="Vision Internationale" class="real-icon">
+                                </div>
+                                <h3>Vision Internationale</h3>
+                                <p>Ouverture sur le monde et les cultures</p>
+                            </div>
+                            <div class="feature-card">
+                                <div class="feature-icon">
+                                    <img src="lightning-icon.png" alt="Réponses Instantanées" class="real-icon">
+                                </div>
+                                <h3>Réponses Instantanées</h3>
+                                <p>Technologie IA avancée</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chat Container -->
+                <div class="chat-container hidden" id="chat-container">
+                    <!-- Chat Messages -->
+                    <div class="chat-messages" id="chat-messages">
+                        <!-- Messages will be dynamically added here -->
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="quick-actions" id="quick-actions">
+                        <button class="quick-action-btn" data-prompt="Parle-moi de l'école El Araki International School">
+                            <img src="school-icon.png" alt="Notre École" class="action-icon">
+                            <span>Notre École</span>
+                        </button>
+                        <button class="quick-action-btn" data-prompt="Quels programmes académiques proposez-vous ?">
+                            <img src="programs-icon.png" alt="Programmes" class="action-icon">
+                            <span>Programmes</span>
+                        </button>
+                        <button class="quick-action-btn" data-prompt="Comment puis-je inscrire mon enfant ?">
+                            <img src="enrollment-icon.png" alt="Inscription" class="action-icon">
+                            <span>Inscription</span>
+                        </button>
+                        <button class="quick-action-btn" data-prompt="Quelles sont les valeurs de l'école ?">
+                            <img src="values-icon.png" alt="Valeurs" class="action-icon">
+                            <span>Valeurs</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Input Section -->
+                <div class="input-section">
+                    <div class="input-container">
+                        <div class="input-wrapper">
+                            <textarea 
+                                id="message-input" 
+                                placeholder="Posez votre question à Elaraki GPT..." 
+                                rows="1"
+                                aria-label="Votre message"
+                            ></textarea>
+                            <button id="send-btn" class="send-btn" aria-label="Envoyer le message">
+                                <img src="send-icon.png" alt="Envoyer" class="send-icon">
+                            </button>
+                        </div>
+                        <div class="input-footer">
+                            <div class="ai-indicator">
+                                <div class="ai-dot"></div>
+                                <span>Elaraki GPT est prêt</span>
+                            </div>
+                            <button class="clear-btn" id="clear-btn">
+                                <img src="clear-icon.png" alt="Effacer" class="clear-icon">
+                                <span>Effacer la conversation</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- About Modal -->
+    <div class="modal" id="about-modal">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-logo">
+                    <div class="logo-shield mini">
+                        <div class="shield-base">
+                            <div class="shield-inner">
+                                <img src="eagle-icon.png" alt="El Araki Eagle" class="eagle-icon">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <h2>À Propos d'Elaraki GPT</h2>
+                <button class="modal-close" id="close-about-modal">
+                    <img src="close-icon.png" alt="Fermer" class="close-icon">
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="about-content">
+                    <div class="about-section">
+                        <h3>École Internationale El Araki</h3>
+                        <p>Fondée sur les principes d'excellence académique et d'ouverture internationale, l'École Internationale El Araki s'engage à fournir une éducation de qualité qui prépare les élèves à devenir des citoyens du monde responsables et éclairés.</p>
+                    </div>
+                    <div class="about-section">
+                        <h3>Elaraki GPT</h3>
+                        <p>Notre assistant IA intelligent utilise les dernières technologies pour offrir un support éducatif, répondre aux questions sur notre établissement, et accompagner la communauté scolaire dans sa quête de connaissance.</p>
+                    </div>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-icon">
+                                <img src="academic-icon.png" alt="Excellence Académique" class="real-icon">
+                            </div>
+                            <div class="stat-label">Excellence Académique</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-icon">
+                                <img src="international-icon.png" alt="Vision Internationale" class="real-icon">
+                            </div>
+                            <div class="stat-label">Vision Internationale</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-icon">
+                                <img src="innovation-icon.png" alt="Innovation Pédagogique" class="real-icon">
+                            </div>
+                            <div class="stat-label">Innovation Pédagogique</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contact Modal -->
+    <div class="modal" id="contact-modal">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Contactez-Nous</h2>
+                <button class="modal-close" id="close-contact-modal">
+                    <img src="close-icon.png" alt="Fermer" class="close-icon">
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="contact-info">
+                    <div class="contact-item">
+                        <div class="contact-icon">
+                            <img src="website-icon.png" alt="Site Web" class="real-icon">
+                        </div>
+                        <div class="contact-details">
+                            <strong>Site Web</strong>
+                            <a href="https://elaraki.ac.ma" target="_blank">elaraki.ac.ma</a>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <div class="contact-icon">
+                            <img src="email-icon.png" alt="Email" class="real-icon">
+                        </div>
+                        <div class="contact-details">
+                            <strong>Email</strong>
+                            <span>info@elaraki.ac.ma</span>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <div class="contact-icon">
+                            <img src="phone-icon.png" alt="Téléphone" class="real-icon">
+                        </div>
+                        <div class="contact-details">
+                            <strong>Téléphone</strong>
+                            <span>+212 543-05544</span>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <div class="contact-icon">
+                            <img src="location-icon.png" alt="Adresse" class="real-icon">
+                        </div>
+                        <div class="contact-details">
+                            <strong>Adresse</strong>
+                            <span>Riad Ennakhil, route de casa - Marrakech</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Indicator -->
+    <div class="loading-indicator" id="loading-indicator">
+        <div class="loading-content">
+            <div class="loading-spinner">
+                <div class="spinner-ring"></div>
+                <div class="spinner-ring"></div>
+                <div class="spinner-ring"></div>
+            </div>
+            <span>Elaraki GPT réfléchit...</span>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

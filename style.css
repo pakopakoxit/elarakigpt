@@ -838,7 +838,7 @@ body {
     margin: 0 auto;
 }
 
-/* Responsive Design */
+/* Responsive Design - MODIFICATIONS POUR CENTRER ELARAKI GPT SUR MOBILE */
 @media (max-width: 768px) {
     .main-container {
         padding: 0 15px;
@@ -857,14 +857,24 @@ body {
     .logo-main {
         flex-direction: column;
         gap: 12px;
+        width: 100%;
+    }
+    
+    .logo-text {
+        text-align: center;
+        width: 100%;
     }
     
     .school-name {
         font-size: 1rem;
+        text-align: center;
     }
     
     .gpt-title {
-        font-size: 1.4rem;
+        font-size: 1.8rem;
+        text-align: center;
+        width: 100%;
+        display: block;
     }
     
     .welcome-section {
@@ -954,5 +964,11 @@ body {
     
     .modal-content {
         margin: 10px;
+    }
+    
+    /* Centrage spécifique pour très petits écrans */
+    .gpt-title {
+        font-size: 1.6rem;
+        text-align: center;
     }
 }

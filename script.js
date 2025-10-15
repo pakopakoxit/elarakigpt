@@ -23,7 +23,7 @@ class ElarakiGPT {
         this.quickActions = document.getElementById('quick-actions');
         
         // Configuration OpenRouter API
-        this.apiKey = "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";
+        this.apiKey = "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";
         this.apiUrl = "https://openrouter.ai/api/v1/chat/completions";
         this.model = "openai/gpt-3.5-turbo"; // ou "openai/gpt-4", "meta-llama/llama-3.1-8b-instruct", etc.
         

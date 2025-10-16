@@ -21,7 +21,7 @@ class ElarakiGPT {
         this.quickActions = document.getElementById('quick-actions');
         
         // 🎯 CONFIGURATION ULTIMATE - MAXIMUM DE REQUÊTES GRATUITES
-        this.apiKey = "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";
+        this.apiKey = "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";
         this.apiUrl = "https://openrouter.ai/api/v1/chat/completions";
         
         // 📊 MODÈLES AVEC LE PLUS DE REQUÊTES GRATUITES

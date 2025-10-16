@@ -1,4 +1,4 @@
-// Elaraki GPT - Configuration Ultimate avec maximum de requêtes gratuites
+// Elaraki GPT - Configuration Ultimate avec support Markdown
 class ElarakiGPT {
     constructor() {
         this.conversation = [];
@@ -295,13 +295,17 @@ class ElarakiGPT {
         }
     }
     
+    // 🆕 FONCTION AMÉLIORÉE - Support du Markdown pour le gras
     addMessage(role, content) {
         const messageElement = document.createElement('div');
         messageElement.className = `message ${role}`;
         
         const messageContent = document.createElement('div');
         messageContent.className = 'message-content';
-        messageContent.innerHTML = content.replace(/\n/g, '<br>');
+        
+        // Convertir le Markdown en HTML
+        const formattedContent = this.formatMarkdown(content);
+        messageContent.innerHTML = formattedContent;
         
         const timestamp = document.createElement('div');
         timestamp.className = 'message-timestamp';
@@ -314,6 +318,22 @@ class ElarakiGPT {
         messageElement.appendChild(messageContent);
         this.chatMessages.appendChild(messageElement);
         this.scrollToBottom();
+    }
+    
+    // 🆕 FONCTION - Conversion Markdown vers HTML (SIMPLIFIÉE)
+    formatMarkdown(text) {
+        if (!text) return '';
+        
+        // Remplacer les sauts de ligne par <br>
+        let formatted = text.replace(/\n/g, '<br>');
+        
+        // **gras** → <strong>gras</strong>
+        formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        
+        // *italique* → <em>italique</em>
+        formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>');
+        
+        return formatted;
     }
     
     scrollToBottom() {

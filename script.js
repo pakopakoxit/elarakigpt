@@ -1,6 +1,4 @@
-// Elaraki GPT - Application de Chat IA avec DeepSeek
-// Design Extraordinaire avec les couleurs exactes d'El Araki International School
-
+// Elaraki GPT - Configuration Ultimate avec maximum de requêtes gratuites
 class ElarakiGPT {
     constructor() {
         this.conversation = [];
@@ -22,21 +20,32 @@ class ElarakiGPT {
         this.chatContainer = document.getElementById('chat-container');
         this.quickActions = document.getElementById('quick-actions');
         
-        // Configuration DeepSeek via OpenRouter avec alternatives
-        this.apiKey = "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";
+        // 🎯 CONFIGURATION ULTIMATE - MAXIMUM DE REQUÊTES GRATUITES
+        this.apiKey = "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";
         this.apiUrl = "https://openrouter.ai/api/v1/chat/completions";
         
-        // Liste des modèles à essayer (par ordre de préférence)
+        // 📊 MODÈLES AVEC LE PLUS DE REQUÊTES GRATUITES
         this.availableModels = [
-            "deepseek/deepseek-chat-v3.1:free",
+            // 🥇 TOP 1 - Le plus de requêtes
+            "google/gemini-2.0-flash-exp:free",
+            
+            // 🥈 TOP 2 - Très généreux
+            "google/gemini-2.0-flash-thinking-exp:free",
+            
+            // 🥉 TOP 3 - Excellent backup
             "meta-llama/llama-3.3-70b-instruct:free",
-            "google/gemma-2-9b-it:free",
-            "microsoft/wizardlm-2-8x22b:free",
-            "qwen/qwen-2.5-72b-instruct:free"
+            
+            // 💎 TOP 4 - Qualité premium
+            "qwen/qwen-2.5-72b-instruct:free",
+            
+            // 🔧 TOP 5 - Très stable
+            "microsoft/wizardlm-2-8x22b:free"
         ];
         
         this.currentModelIndex = 0;
         this.model = this.availableModels[this.currentModelIndex];
+        this.lastRequestTime = 0;
+        this.minRequestInterval = 1000; // 1 seconde entre les requêtes
         
         this.init();
     }
@@ -57,7 +66,7 @@ class ElarakiGPT {
         this.closeAboutModal.addEventListener('click', () => this.hideModal(this.aboutModal));
         this.closeContactModal.addEventListener('click', () => this.hideModal(this.contactModal));
         
-        // Fermer les modales en cliquant à l'extérieur
+        // Fermer les modales
         [this.aboutModal, this.contactModal].forEach(modal => {
             modal.addEventListener('click', (e) => {
                 if (e.target === modal || e.target.classList.contains('modal-backdrop')) {
@@ -76,20 +85,18 @@ class ElarakiGPT {
             });
         });
         
-        // Redimensionnement automatique de la zone de texte
+        // Redimensionnement automatique
         this.messageInput.addEventListener('input', () => {
             this.autoResizeTextarea();
         });
         
-        // Charger la conversation depuis le localStorage
         this.loadConversation();
         
-        // Afficher les actions rapides après un délai
         setTimeout(() => {
             this.quickActions.classList.add('show');
         }, 1000);
         
-        // Tester la connexion au démarrage
+        // Tester la connexion
         this.testAllModels();
     }
     
@@ -103,58 +110,62 @@ class ElarakiGPT {
         
         if (!message || this.isLoading) return;
         
-        // Cacher la section de bienvenue au premier message
+        // Respecter l'intervalle minimum entre les requêtes
+        const now = Date.now();
+        const timeSinceLastRequest = now - this.lastRequestTime;
+        if (timeSinceLastRequest < this.minRequestInterval) {
+            await new Promise(resolve => setTimeout(resolve, this.minRequestInterval - timeSinceLastRequest));
+        }
+        
         if (this.conversation.length === 0) {
             this.hideWelcomeSection();
         }
         
-        // Ajouter le message utilisateur à la conversation
         this.addMessage('user', message);
         this.messageInput.value = '';
         this.autoResizeTextarea();
         
-        // Afficher l'indicateur de chargement
         this.setLoading(true);
         
         try {
-            // Obtenir la réponse de l'IA
-            const response = await this.getAIResponse(message);
-            
-            // Ajouter le message de l'assistant à la conversation
+            const response = await this.getAIResponseWithRetry(message);
             this.addMessage('assistant', response);
-            
-            // Sauvegarder la conversation dans le localStorage
+            this.conversation.push({ role: "user", content: message });
+            this.conversation.push({ role: "assistant", content: response });
             this.saveConversation();
+            this.lastRequestTime = Date.now();
         } catch (error) {
             console.error('Erreur:', error);
-            
-            // Essayer avec un autre modèle en cas d'erreur
-            if (await this.tryNextModel()) {
-                // Réessayer avec le nouveau modèle
-                try {
-                    const response = await this.getAIResponse(message);
-                    this.addMessage('assistant', response);
-                    this.saveConversation();
-                } catch (retryError) {
-                    this.addMessage('assistant', 'Désolé, je rencontre des difficultés techniques. Veuillez vérifier votre connexion ou réessayer plus tard.');
-                }
-            } else {
-                this.addMessage('assistant', 'Désolé, service temporairement indisponible. Veuillez réessayer dans quelques instants.');
-            }
+            this.addMessage('assistant', this.getFriendlyErrorMessage(error));
         } finally {
             this.setLoading(false);
         }
     }
     
+    async getAIResponseWithRetry(userMessage, retryCount = 0) {
+        const maxRetries = 3;
+        
+        try {
+            return await this.getAIResponse(userMessage);
+        } catch (error) {
+            if (retryCount < maxRetries) {
+                console.log(`Tentative ${retryCount + 1} échouée, changement de modèle...`);
+                if (await this.tryNextModel()) {
+                    await new Promise(resolve => setTimeout(resolve, 1000 * (retryCount + 1)));
+                    return await this.getAIResponseWithRetry(userMessage, retryCount + 1);
+                }
+            }
+            throw error;
+        }
+    }
+    
     async getAIResponse(userMessage) {
-        // Ajouter le message utilisateur au tableau de conversation pour l'API
         this.conversation.push({ role: "user", content: userMessage });
         
-        // Préparer la requête OpenRouter API
         const requestBody = {
             model: this.model,
             messages: this.conversation,
-            max_tokens: 1000,
+            max_tokens: 1024,
             temperature: 0.7,
             stream: false
         };
@@ -173,43 +184,56 @@ class ElarakiGPT {
         });
         
         if (!response.ok) {
-            const errorData = await response.json().catch(() => ({ error: { message: 'Unknown error' } }));
-            throw new Error(`Erreur API ${response.status}: ${errorData.error?.message || 'Unknown error'}`);
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.error?.message || `HTTP ${response.status}`);
         }
         
         const data = await response.json();
         
-        // Vérifier la structure de la réponse OpenRouter
-        if (!data.choices || !data.choices[0] || !data.choices[0].message) {
-            throw new Error('Format de réponse API invalide');
+        if (!data.choices?.[0]?.message) {
+            throw new Error('Réponse API invalide');
         }
         
-        // Extraire la réponse de l'assistant
         const assistantMessage = data.choices[0].message.content;
-        
-        // Ajouter le message de l'assistant au tableau de conversation
         this.conversation.push({ role: "assistant", content: assistantMessage });
         
         return assistantMessage;
     }
     
     async tryNextModel() {
-        this.currentModelIndex++;
+        this.currentModelIndex = (this.currentModelIndex + 1) % this.availableModels.length;
+        this.model = this.availableModels[this.currentModelIndex];
         
-        if (this.currentModelIndex < this.availableModels.length) {
-            this.model = this.availableModels[this.currentModelIndex];
-            console.log(`Changement de modèle pour: ${this.model}`);
-            
-            // Tester le nouveau modèle
+        console.log(`Essai du modèle: ${this.model}`);
+        
+        try {
+            await this.testCurrentModel();
+            this.updateModelIndicator();
+            return true;
+        } catch (error) {
+            console.log(`Modèle ${this.model} non disponible`);
+            return false;
+        }
+    }
+    
+    async testAllModels() {
+        console.log('🔍 Test des modèles disponibles...');
+        
+        for (let i = 0; i < this.availableModels.length; i++) {
+            this.model = this.availableModels[i];
             try {
                 await this.testCurrentModel();
-                return true;
+                this.currentModelIndex = i;
+                console.log(`✅ Modèle sélectionné: ${this.model}`);
+                this.updateModelIndicator();
+                return;
             } catch (error) {
-                return this.tryNextModel(); // Essayer le modèle suivant
+                console.log(`❌ ${this.model} - ${error.message}`);
             }
         }
         
-        return false; // Aucun modèle disponible
+        // Si aucun modèle ne fonctionne
+        this.updateStatus("Aucun modèle disponible - Réessayez plus tard");
     }
     
     async testCurrentModel() {
@@ -223,46 +247,51 @@ class ElarakiGPT {
             },
             body: JSON.stringify({
                 model: this.model,
-                messages: [
-                    {
-                        "role": "user",
-                        "content": "Test"
-                    }
-                ],
+                messages: [{ role: "user", content: "Bonjour" }],
                 max_tokens: 10
             })
         });
         
         if (!testResponse.ok) {
-            throw new Error(`Modèle ${this.model} non disponible`);
+            throw new Error(`HTTP ${testResponse.status}`);
         }
         
-        console.log(`✅ Modèle ${this.model} fonctionne`);
+        await testResponse.json();
         return true;
     }
     
-    async testAllModels() {
-        console.log('🧪 Test de tous les modèles disponibles...');
+    getFriendlyErrorMessage(error) {
+        const errorMsg = error.message.toLowerCase();
         
-        for (let i = 0; i < this.availableModels.length; i++) {
-            this.model = this.availableModels[i];
-            try {
-                await this.testCurrentModel();
-                this.currentModelIndex = i;
-                console.log(`🎯 Modèle sélectionné: ${this.model}`);
-                this.updateModelIndicator();
-                break;
-            } catch (error) {
-                console.log(`❌ ${this.model} - ${error.message}`);
-            }
+        if (errorMsg.includes('rate limit') || errorMsg.includes('quota')) {
+            return "Limite temporaire atteinte. L'application change automatiquement de modèle... Réessayez dans 2 secondes.";
+        } else if (errorMsg.includes('404') || errorMsg.includes('not found')) {
+            return "Modèle temporairement indisponible. Changement automatique en cours...";
+        } else {
+            return "Désolé, service momentanément indisponible. Réessayez dans quelques instants.";
         }
     }
     
     updateModelIndicator() {
         const aiText = document.querySelector('.ai-indicator span');
         if (aiText) {
-            const modelName = this.model.split('/')[1]?.split(':')[0] || this.model;
+            const modelNames = {
+                'google/gemini-2.0-flash-exp:free': 'Gemini 2 Flash',
+                'google/gemini-2.0-flash-thinking-exp:free': 'Gemini 2 Thinking',
+                'meta-llama/llama-3.3-70b-instruct:free': 'Llama 3.3',
+                'qwen/qwen-2.5-72b-instruct:free': 'Qwen 2.5',
+                'microsoft/wizardlm-2-8x22b:free': 'WizardLM'
+            };
+            
+            const modelName = modelNames[this.model] || this.model.split('/')[1]?.split(':')[0] || this.model;
             aiText.textContent = `Elaraki GPT (${modelName}) est prêt`;
+        }
+    }
+    
+    updateStatus(status) {
+        const aiText = document.querySelector('.ai-indicator span');
+        if (aiText) {
+            aiText.textContent = status;
         }
     }
     
@@ -272,10 +301,7 @@ class ElarakiGPT {
         
         const messageContent = document.createElement('div');
         messageContent.className = 'message-content';
-        
-        // Formater le contenu avec des sauts de ligne
-        const formattedContent = content.replace(/\n/g, '<br>');
-        messageContent.innerHTML = formattedContent;
+        messageContent.innerHTML = content.replace(/\n/g, '<br>');
         
         const timestamp = document.createElement('div');
         timestamp.className = 'message-timestamp';
@@ -286,7 +312,6 @@ class ElarakiGPT {
         
         messageContent.appendChild(timestamp);
         messageElement.appendChild(messageContent);
-        
         this.chatMessages.appendChild(messageElement);
         this.scrollToBottom();
     }
@@ -301,20 +326,9 @@ class ElarakiGPT {
         
         if (loading) {
             this.loadingIndicator.classList.add('show');
-            // Mettre à jour l'indicateur AI
-            const aiDot = document.querySelector('.ai-dot');
-            const aiText = document.querySelector('.ai-indicator span');
-            if (aiDot) aiDot.style.background = '#dc2626';
-            if (aiText) {
-                const modelName = this.model.split('/')[1]?.split(':')[0] || this.model;
-                aiText.textContent = `Elaraki GPT (${modelName}) réfléchit...`;
-            }
+            this.updateStatus("Elaraki GPT réfléchit...");
         } else {
             this.loadingIndicator.classList.remove('show');
-            // Remettre l'indicateur AI à normal
-            const aiDot = document.querySelector('.ai-dot');
-            const aiText = document.querySelector('.ai-indicator span');
-            if (aiDot) aiDot.style.background = '#059669';
             this.updateModelIndicator();
         }
     }
@@ -333,8 +347,6 @@ class ElarakiGPT {
         this.conversation = [];
         this.chatMessages.innerHTML = '';
         this.showWelcomeSection();
-        
-        // Effacer le localStorage
         localStorage.removeItem('elarakiGPTConversation');
     }
     
@@ -356,39 +368,21 @@ class ElarakiGPT {
     
     loadConversation() {
         const savedConversation = localStorage.getItem('elarakiGPTConversation');
-        
         if (savedConversation) {
             try {
                 this.conversation = JSON.parse(savedConversation);
-                
-                // Cacher la section de bienvenue
                 this.hideWelcomeSection();
-                
-                // Afficher la conversation sauvegardée
                 this.conversation.forEach(message => {
                     this.addMessage(message.role, message.content);
                 });
             } catch (error) {
-                console.error('Erreur lors du chargement de la conversation:', error);
                 this.clearConversation();
             }
         }
     }
 }
 
-// Initialiser l'application lorsque le DOM est chargé
+// Initialiser l'application
 document.addEventListener('DOMContentLoaded', () => {
-    const elarakiGPT = new ElarakiGPT();
-    
-    // Exposer l'instance globalement pour le débogage
-    window.elarakiGPT = elarakiGPT;
-});
-
-// Gérer le redimensionnement de la fenêtre
-window.addEventListener('resize', () => {
-    const messageInput = document.getElementById('message-input');
-    if (messageInput) {
-        messageInput.style.height = 'auto';
-        messageInput.style.height = Math.min(messageInput.scrollHeight, 120) + 'px';
-    }
+    new ElarakiGPT();
 });

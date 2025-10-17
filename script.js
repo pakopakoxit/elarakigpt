@@ -20,6 +20,15 @@ class ElarakiGPT {
         this.welcomeSection = document.getElementById('welcome-section');
         this.chatContainer = document.getElementById('chat-container');
         this.quickActions = document.getElementById('quick-actions');
+        this.statusText = document.getElementById('status-text');
+        
+        // Nouveaux éléments pour la sidebar
+        this.conversationsSidebar = document.getElementById('conversations-sidebar');
+        this.conversationsList = document.getElementById('conversations-list');
+        this.newChatBtn = document.getElementById('new-chat-btn');
+        this.toggleSidebar = document.getElementById('toggle-sidebar');
+        this.sidebarOverlay = document.getElementById('sidebar-overlay');
+        this.mobileMenuBtn = document.getElementById('mobile-menu-btn');
         
         // 🗝️ 8 CLÉS API AVEC SYSTÈME DE CHARGE
         this.apiKeys = [
@@ -121,6 +130,11 @@ class ElarakiGPT {
         this.keyHealth = new Map();
         this.modelHealth = new Map();
         
+        // Gestion des conversations
+        this.currentConversationId = null;
+        this.conversations = new Map(); // Map pour stocker toutes les conversations
+        this.conversationTitles = new Map(); // Titres des conversations
+        
         // Statistiques avancées
         this.stats = {
             totalRequests: 0,
@@ -174,7 +188,21 @@ class ElarakiGPT {
             this.autoResizeTextarea();
         });
         
-        this.loadConversation();
+        // Nouveaux écouteurs pour la sidebar
+        this.newChatBtn.addEventListener('click', () => this.startNewChat());
+        this.toggleSidebar.addEventListener('click', () => this.toggleSidebarVisibility());
+        this.sidebarOverlay.addEventListener('click', () => this.hideSidebarMobile());
+        this.mobileMenuBtn.addEventListener('click', () => this.showSidebarMobile());
+        
+        // Charger les conversations sauvegardées
+        this.loadSavedConversations();
+        
+        // Créer une nouvelle conversation au démarrage
+        this.startNewChat();
+        
+        // Gestion du redimensionnement
+        window.addEventListener('resize', () => this.handleResize());
+        this.handleResize(); // Initial call
         
         setTimeout(() => {
             this.quickActions.classList.add('show');
@@ -182,6 +210,259 @@ class ElarakiGPT {
         
         // Initialisation intelligente
         this.initializeSystem();
+    }
+    
+    // Méthodes pour la gestion des conversations
+    startNewChat() {
+        // Générer un nouvel ID de conversation
+        this.currentConversationId = 'chat_' + Date.now();
+        
+        // Réinitialiser la conversation actuelle
+        this.conversation = [];
+        this.chatMessages.innerHTML = '';
+        this.showWelcomeSection();
+        
+        // Sauvegarder la nouvelle conversation
+        this.saveCurrentConversation();
+        
+        // Mettre à jour la sidebar
+        this.updateConversationsList();
+        
+        // Cacher la sidebar sur mobile
+        this.hideSidebarMobile();
+        
+        console.log('Nouvelle conversation démarrée:', this.currentConversationId);
+    }
+    
+    saveCurrentConversation() {
+        if (this.currentConversationId && this.conversation.length > 0) {
+            // Générer un titre basé sur le premier message
+            if (!this.conversationTitles.has(this.currentConversationId)) {
+                const firstUserMessage = this.conversation.find(msg => msg.role === 'user');
+                const title = firstUserMessage 
+                    ? this.generateConversationTitle(firstUserMessage.content)
+                    : 'Nouvelle conversation';
+                this.conversationTitles.set(this.currentConversationId, title);
+            }
+            
+            // Sauvegarder la conversation
+            this.conversations.set(this.currentConversationId, {
+                messages: [...this.conversation],
+                title: this.conversationTitles.get(this.currentConversationId),
+                lastUpdated: Date.now(),
+                model: this.model
+            });
+            
+            // Sauvegarder dans le localStorage
+            this.saveToLocalStorage();
+        }
+    }
+    
+    generateConversationTitle(firstMessage) {
+        // Extraire les premiers mots du message pour le titre
+        const words = firstMessage.trim().split(/\s+/);
+        let title = words.slice(0, 6).join(' '); // Maximum 6 mots
+        
+        // Ajouter "..." si le titre est tronqué
+        if (words.length > 6) {
+            title += '...';
+        }
+        
+        // Retourner le titre ou un texte par défaut
+        return title || 'Nouvelle conversation';
+    }
+    
+    loadConversation(conversationId) {
+        const conversationData = this.conversations.get(conversationId);
+        if (conversationData) {
+            this.currentConversationId = conversationId;
+            this.conversation = [...conversationData.messages];
+            
+            // Afficher les messages
+            this.chatMessages.innerHTML = '';
+            this.conversation.forEach(message => {
+                this.addMessage(message.role, message.content);
+            });
+            
+            this.hideWelcomeSection();
+            this.scrollToBottom();
+            
+            // Mettre à jour l'UI
+            this.updateConversationsList();
+            
+            // Cacher la sidebar sur mobile
+            this.hideSidebarMobile();
+            
+            console.log('Conversation chargée:', conversationId);
+        }
+    }
+    
+    loadSavedConversations() {
+        // Charger depuis le localStorage
+        const saved = localStorage.getItem('elarakiGPTConversations');
+        const savedTitles = localStorage.getItem('elarakiGPTConversationTitles');
+        
+        if (saved) {
+            try {
+                const conversationsData = JSON.parse(saved);
+                this.conversations = new Map(Object.entries(conversationsData));
+            } catch (error) {
+                console.error('Erreur lors du chargement des conversations:', error);
+                this.conversations = new Map();
+            }
+        }
+        
+        if (savedTitles) {
+            try {
+                const titlesData = JSON.parse(savedTitles);
+                this.conversationTitles = new Map(Object.entries(titlesData));
+            } catch (error) {
+                console.error('Erreur lors du chargement des titres:', error);
+                this.conversationTitles = new Map();
+            }
+        }
+        
+        this.updateConversationsList();
+    }
+    
+    saveToLocalStorage() {
+        // Sauvegarder les conversations
+        const conversationsObj = Object.fromEntries(this.conversations);
+        localStorage.setItem('elarakiGPTConversations', JSON.stringify(conversationsObj));
+        
+        // Sauvegarder les titres
+        const titlesObj = Object.fromEntries(this.conversationTitles);
+        localStorage.setItem('elarakiGPTConversationTitles', JSON.stringify(titlesObj));
+    }
+    
+    updateConversationsList() {
+        if (!this.conversationsList) return;
+        
+        this.conversationsList.innerHTML = '';
+        
+        // Grouper les conversations par date
+        const today = new Date().setHours(0, 0, 0, 0);
+        const lastWeek = today - (7 * 24 * 60 * 60 * 1000);
+        const last30Days = today - (30 * 24 * 60 * 60 * 1000);
+        
+        const todayConversations = [];
+        const weekConversations = [];
+        const monthConversations = [];
+        const olderConversations = [];
+        
+        // Trier les conversations par date
+        const sortedConversations = Array.from(this.conversations.entries())
+            .sort(([,a], [,b]) => b.lastUpdated - a.lastUpdated);
+        
+        sortedConversations.forEach(([id, data]) => {
+            const conversationDate = new Date(data.lastUpdated);
+            const conversationDay = conversationDate.setHours(0, 0, 0, 0);
+            
+            if (conversationDay === today) {
+                todayConversations.push({id, data});
+            } else if (conversationDay >= lastWeek) {
+                weekConversations.push({id, data});
+            } else if (conversationDay >= last30Days) {
+                monthConversations.push({id, data});
+            } else {
+                olderConversations.push({id, data});
+            }
+        });
+        
+        // Afficher les groupes
+        if (todayConversations.length > 0) {
+            this.createConversationGroup('Aujourd\'hui', todayConversations);
+        }
+        
+        if (weekConversations.length > 0) {
+            this.createConversationGroup('7 derniers jours', weekConversations);
+        }
+        
+        if (monthConversations.length > 0) {
+            this.createConversationGroup('30 derniers jours', monthConversations);
+        }
+        
+        if (olderConversations.length > 0) {
+            this.createConversationGroup('Plus ancien', olderConversations);
+        }
+        
+        // Si aucune conversation
+        if (sortedConversations.length === 0) {
+            const emptyState = document.createElement('div');
+            emptyState.className = 'empty-state';
+            emptyState.innerHTML = `
+                <div style="text-align: center; padding: 40px 20px; color: var(--text-light);">
+                    <div style="font-size: 48px; margin-bottom: 10px;">💬</div>
+                    <p>Aucune conversation</p>
+                </div>
+            `;
+            this.conversationsList.appendChild(emptyState);
+        }
+    }
+    
+    createConversationGroup(title, conversations) {
+        const group = document.createElement('div');
+        group.className = 'conversation-group';
+        
+        const groupTitle = document.createElement('div');
+        groupTitle.className = 'conversation-group-title';
+        groupTitle.textContent = title;
+        group.appendChild(groupTitle);
+        
+        conversations.forEach(({id, data}) => {
+            const conversationItem = document.createElement('div');
+            conversationItem.className = `conversation-item ${id === this.currentConversationId ? 'active' : ''}`;
+            
+            conversationItem.innerHTML = `
+                <div class="conversation-icon">💬</div>
+                <div class="conversation-text">${data.title}</div>
+            `;
+            
+            conversationItem.addEventListener('click', () => this.loadConversation(id));
+            group.appendChild(conversationItem);
+        });
+        
+        this.conversationsList.appendChild(group);
+    }
+    
+    // Méthodes pour la sidebar
+    toggleSidebarVisibility() {
+        this.conversationsSidebar.classList.toggle('collapsed');
+        document.body.classList.toggle('sidebar-open', !this.conversationsSidebar.classList.contains('collapsed'));
+        
+        // Mettre à jour l'icône
+        const icon = this.toggleSidebar.querySelector('svg path');
+        if (this.conversationsSidebar.classList.contains('collapsed')) {
+            icon.setAttribute('d', 'M5 12h14M12 5l7 7-7 7');
+        } else {
+            icon.setAttribute('d', 'M19 12H5M12 19l-7-7 7-7');
+        }
+    }
+    
+    showSidebarMobile() {
+        this.conversationsSidebar.classList.add('mobile-open');
+        this.sidebarOverlay.classList.add('mobile-open');
+        document.body.style.overflow = 'hidden';
+    }
+    
+    hideSidebarMobile() {
+        this.conversationsSidebar.classList.remove('mobile-open');
+        this.sidebarOverlay.classList.remove('mobile-open');
+        document.body.style.overflow = 'auto';
+    }
+    
+    handleResize() {
+        if (window.innerWidth > 768) {
+            // Sur desktop, toujours afficher la sidebar
+            this.conversationsSidebar.classList.remove('collapsed', 'mobile-open');
+            this.sidebarOverlay.classList.remove('mobile-open');
+            document.body.classList.add('sidebar-open');
+            document.body.style.overflow = 'auto';
+        } else {
+            // Sur mobile, cacher la sidebar par défaut
+            this.conversationsSidebar.classList.add('collapsed');
+            document.body.classList.remove('sidebar-open');
+        }
     }
     
     async initializeSystem() {
@@ -362,6 +643,9 @@ class ElarakiGPT {
         
         if (!message || this.isLoading) return;
         
+        // Sauvegarder la conversation avant d'ajouter le nouveau message
+        this.saveCurrentConversation();
+        
         // Mettre à jour la configuration avec les meilleures ressources
         this.updateCurrentConfig();
         
@@ -399,7 +683,9 @@ class ElarakiGPT {
             this.addMessage('assistant', response);
             this.conversation.push({ role: "user", content: message });
             this.conversation.push({ role: "assistant", content: response });
-            this.saveConversation();
+            
+            // Sauvegarder la conversation mise à jour
+            this.saveCurrentConversation();
             
             this.lastRequestTime = Date.now();
             this.stats.successfulRequests++;
@@ -571,9 +857,8 @@ class ElarakiGPT {
     }
     
     updateStatus(status) {
-        const aiText = document.querySelector('.ai-indicator span');
-        if (aiText) {
-            aiText.textContent = status;
+        if (this.statusText) {
+            this.statusText.textContent = status;
         }
     }
     
@@ -638,7 +923,15 @@ class ElarakiGPT {
         this.conversation = [];
         this.chatMessages.innerHTML = '';
         this.showWelcomeSection();
-        localStorage.removeItem('elarakiGPTConversation');
+        
+        // Si on a une conversation active, la supprimer
+        if (this.currentConversationId) {
+            this.conversations.delete(this.currentConversationId);
+            this.conversationTitles.delete(this.currentConversationId);
+            this.saveToLocalStorage();
+            this.updateConversationsList();
+        }
+        
         this.modelRetryCount = 0;
     }
     
@@ -650,27 +943,6 @@ class ElarakiGPT {
     hideModal(modal) {
         modal.classList.remove('show');
         document.body.style.overflow = 'auto';
-    }
-    
-    saveConversation() {
-        if (this.conversation.length > 0) {
-            localStorage.setItem('elarakiGPTConversation', JSON.stringify(this.conversation));
-        }
-    }
-    
-    loadConversation() {
-        const savedConversation = localStorage.getItem('elarakiGPTConversation');
-        if (savedConversation) {
-            try {
-                this.conversation = JSON.parse(savedConversation);
-                this.hideWelcomeSection();
-                this.conversation.forEach(message => {
-                    this.addMessage(message.role, message.content);
-                });
-            } catch (error) {
-                this.clearConversation();
-            }
-        }
     }
     
     // Méthode pour obtenir les statistiques du système

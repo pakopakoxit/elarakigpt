@@ -18,6 +18,34 @@
         <div class="bg-shape shape-3"></div>
     </div>
 
+    <!-- Sidebar des conversations -->
+    <div id="conversations-sidebar" class="conversations-sidebar">
+        <div class="sidebar-header">
+            <button id="new-chat-btn" class="new-chat-btn">
+                <span>+</span> Nouveau chat
+            </button>
+            <button id="toggle-sidebar" class="toggle-sidebar">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 12H5M12 19l-7-7 7-7"/>
+                </svg>
+            </button>
+        </div>
+        
+        <div class="conversations-list" id="conversations-list">
+            <!-- Les conversations seront chargées ici dynamiquement -->
+        </div>
+        
+        <div class="sidebar-footer">
+            <div class="user-section">
+                <div class="user-avatar">E</div>
+                <span class="user-name">Elaraki GPT</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Overlay pour mobile -->
+    <div id="sidebar-overlay" class="sidebar-overlay"></div>
+
     <!-- Main Container -->
     <div class="main-container">
         <!-- Header avec Logo Élégant -->
@@ -26,6 +54,11 @@
                 <div class="logo-section">
                     <div class="logo-container">
                         <div class="logo-main">
+                            <button id="mobile-menu-btn" class="mobile-menu-btn">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M3 12h18M3 6h18M3 18h18"/>
+                                </svg>
+                            </button>
                             <div class="logo-shield">
                                 <div class="shield-base">
                                     <div class="shield-inner">
@@ -65,6 +98,7 @@
                         </div>
                         <h1 class="welcome-title">Bienvenue sur Elaraki GPT</h1>
                         <p class="welcome-subtitle">Votre assistant IA intelligent de l'École Internationale El Araki</p>
+                        
                         <div class="feature-grid">
                             <div class="feature-card">
                                 <div class="feature-icon">
@@ -136,7 +170,7 @@
                         <div class="input-footer">
                             <div class="ai-indicator">
                                 <div class="ai-dot"></div>
-                                <span>Elaraki GPT est prêt</span>
+                                <span id="status-text">Elaraki GPT est prêt</span>
                             </div>
                             <button class="clear-btn" id="clear-btn">
                                 <img src="clear-icon.png" alt="Effacer" class="clear-icon">
